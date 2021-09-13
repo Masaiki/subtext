@@ -1,0 +1,38 @@
+name: Build
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup msbuild
+      uses: microsoft/setup-msbuild@v1
+    - name: Setup vcpkg
+      run: |
+        git config --global user.email "33897984+Masaiki@users.noreply.github.com"
+        git config --global user.name "github-action[bot]"
+        git clone https://github.com/microsoft/vcpkg.git vcpkg-customed
+        cd vcpkg-customed
+        git remote add libass-fix-pc https://github.com/Masaiki/vcpkg.git
+        git fetch libass-fix-pc
+        git cherry-pick 93a49e5 db336fa
+        bootstrap-vcpkg.bat
+    - name: Build ffmpeg iconv libass
+      run: vcpkg-customed\vcpkg install --triplet x64-windows-static-md ffmpeg[avcodec,avformat] libiconv libass[asm]
+    - name: Configure
+      run: |
+        mkdir build
+        cmake -S. -Bbuild -DCMAKE_TOOLCHAIN_FILE=vcpkg-customed/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_BUILD_TYPE=Release
+    - name: Build
+      run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x64 subtext.sln
+      working-directory: build
+    - name: Upload
+      uses: actions/upload-artifact@v2
+      with:
+        name: subtext-cmake-vcpkg-windows
+        path: build/Release/subtext.dll
