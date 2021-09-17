@@ -20,7 +20,7 @@ jobs:
         cd vcpkg-customed
         git remote add libass-fix-pc https://github.com/Masaiki/vcpkg.git
         git fetch libass-fix-pc
-        git cherry-pick 93a49e5 db336fa
+        git cherry-pick 726edd8^..8a6c6e8
         bootstrap-vcpkg.bat
     - name: Build ffmpeg iconv libass
       run: vcpkg-customed\vcpkg install --triplet x64-windows-static-md ffmpeg[avcodec,avformat] libiconv libass[asm]
