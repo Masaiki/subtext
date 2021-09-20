@@ -214,16 +214,17 @@ extern "C" ASS_Track *convertToASS(const char *file_name, const char *contents, 
     }
 
 
-    AVPacket *packet = av_packet_alloc();
+    AVPacket packet;
+    av_init_packet(&packet);
 
     AVSubtitle avsub;
 
     int total_events = 0;
     int failed_decoding = 0;
 
-    while (av_read_frame(fctx, packet) == 0) {
-        if (packet->stream_index != stream_index) {
-            av_packet_unref(packet);
+    while (av_read_frame(fctx, &packet) == 0) {
+        if (packet.stream_index != stream_index) {
+            av_packet_unref(&packet);
             continue;
         }
 
@@ -231,9 +232,11 @@ extern "C" ASS_Track *convertToASS(const char *file_name, const char *contents, 
 
         int got_avsub = 0;
 
-        ret = avcodec_decode_subtitle2(avctx, &avsub, &got_avsub, packet);
+        AVPacket decoded_packet = packet;
+
+        ret = avcodec_decode_subtitle2(avctx, &avsub, &got_avsub, &decoded_packet);
         if (ret < 0 || !got_avsub) {
-            av_packet_unref(packet);
+            av_packet_unref(&packet);
             failed_decoding++;
             continue;
         }
@@ -243,7 +246,7 @@ extern "C" ASS_Track *convertToASS(const char *file_name, const char *contents, 
 
             if (rect->type != SUBTITLE_ASS || !rect->ass || !rect->ass[0]) {
                 avsubtitle_free(&avsub);
-                av_packet_unref(packet);
+                av_packet_unref(&packet);
                 continue;
             }
 
@@ -251,10 +254,9 @@ extern "C" ASS_Track *convertToASS(const char *file_name, const char *contents, 
         }
 
         avsubtitle_free(&avsub);
-        av_packet_unref(packet);
+        av_packet_unref(&packet);
     }
 
-    av_packet_free(&packet);
     avcodec_free_context(&avctx);
     avformat_close_input(&fctx);
 
