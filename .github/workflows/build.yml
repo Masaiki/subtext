@@ -21,6 +21,7 @@ jobs:
         git remote add libass-fix-pc https://github.com/Masaiki/vcpkg.git
         git fetch libass-fix-pc
         git cherry-pick 3f951f7 c2c719a 689c9ad 00b4a05
+        git revert --no-edit dd6fd59
         bootstrap-vcpkg.bat
     - name: Build ffmpeg iconv libass
       run: |
