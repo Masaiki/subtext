@@ -16,13 +16,16 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#endif
 #include <string.h>
 #include <ass/ass.h>
 #include <time.h>
 #include <inttypes.h>
 
-#include <VapourSynth4.h>
-#include <VSHelper4.h>
+#include "VapourSynth4.h"
+#include "VSHelper4.h"
 
 #include "common.h"
 
@@ -270,7 +273,7 @@ static void VS_CC assRenderCreate(const VSMap *in, VSMap *out, void *userData,
 
 #define ERROR_SIZE 512
     char error[ERROR_SIZE] = { 0 };
-    
+
     d.ass = NULL;
     d.lastn = -1;
     d.node = vsapi->mapGetNode(in, "clip", 0, 0);

@@ -1,4 +1,5 @@
 #ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
 #undef fseeko
 #undef ftello
 #define fseeko _fseeki64

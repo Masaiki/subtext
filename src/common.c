@@ -1,8 +1,8 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include <VapourSynth4.h>
-#include <VSHelper4.h>
+#include "VapourSynth4.h"
+#include "VSHelper4.h"
 
 
 void blendSubtitles(VSNode *clip, VSNode *subs, const VSMap *in, VSMap *out, const char *filter_name, char *error, size_t error_size, VSCore *core, const VSAPI *vsapi) {
@@ -18,24 +18,6 @@ void blendSubtitles(VSNode *clip, VSNode *subs, const VSMap *in, VSMap *out, con
     ret = vsapi->invoke(std_plugin, "PropToClip", args);
     vsapi->freeMap(args);
     VSNode *alpha = vsapi->mapGetNode(ret, "clip", 0, NULL);
-    vsapi->freeMap(ret);
-
-
-    args = vsapi->createMap();
-    vsapi->mapSetNode(args, "clip", subs, maReplace);
-    vsapi->mapSetNode(args, "alpha", alpha, maReplace);
-
-    ret = vsapi->invoke(std_plugin, "PreMultiply", args);
-    vsapi->freeMap(args);
-    if (vsapi->mapGetError(ret)) {
-        snprintf(error, error_size, "%s: %s", filter_name, vsapi->mapGetError(ret));
-        vsapi->mapSetError(out, error);
-        vsapi->freeMap(ret);
-        vsapi->freeNode(alpha);
-        return;
-    }
-
-    subs = vsapi->mapGetNode(ret, "clip", 0, NULL);
     vsapi->freeMap(ret);
 
     const VSVideoInfo *clip_vi = vsapi->getVideoInfo(clip);
@@ -166,7 +148,6 @@ void blendSubtitles(VSNode *clip, VSNode *subs, const VSMap *in, VSMap *out, con
     vsapi->mapSetNode(args, "clipa", clip, maReplace);
     vsapi->mapConsumeNode(args, "clipb", subs, maReplace);
     vsapi->mapConsumeNode(args, "mask", alpha, maReplace);
-    vsapi->mapSetInt(args, "premultiplied", 1, maReplace);
 
     ret = vsapi->invoke(std_plugin, "MaskedMerge", args);
     vsapi->freeMap(args);

@@ -1,8 +1,13 @@
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -10,8 +15,8 @@ extern "C" {
 #include <libavutil/opt.h>
 }
 
-#include <VapourSynth4.h>
-#include <VSHelper4.h>
+#include "VapourSynth4.h"
+#include "VSHelper4.h"
 
 #include "common.h"
 
@@ -169,8 +174,13 @@ static const VSFrame *VS_CC imageFileGetFrame(int n, int activationReason, void 
                 if (rect->w <= 0 || rect->h <= 0 || rect->type != SUBTITLE_BITMAP)
                     continue;
 
+#ifdef VS_HAVE_AVSUBTITLERECT_AVPICTURE
+                uint8_t **rect_data = rect->pict.data;
+                int *rect_linesize = rect->pict.linesize;
+#else
                 uint8_t **rect_data = rect->data;
                 int *rect_linesize = rect->linesize;
+#endif
 
                 uint32_t palette[AVPALETTE_COUNT];
                 memcpy(palette, rect_data[1], AVPALETTE_SIZE);
