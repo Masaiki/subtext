@@ -8,6 +8,13 @@ jobs:
     defaults:
       run:
         shell: cmd
+    strategy:
+      matrix:
+        include:
+        - vcpkg_target: 'x86'
+          platform: 'Win32'
+        - vcpkg_target: 'x64'
+          platform: 'x64'
     steps:
     - uses: actions/checkout@v2
     - name: Setup msbuild
@@ -25,17 +32,16 @@ jobs:
         bootstrap-vcpkg.bat
     - name: Build ffmpeg iconv libass
       run: |
-        vcpkg-customed\vcpkg install --triplet x64-windows-static-md ffmpeg[avcodec,avformat] libiconv fontconfig
-        vcpkg-customed\vcpkg install --triplet x64-windows-static-md libass[asm]
+        vcpkg-customed\vcpkg install --triplet ${{matrix.vcpkg_target}}-windows-static ffmpeg[avcodec,avformat] libiconv fontconfig
+        vcpkg-customed\vcpkg install --triplet ${{matrix.vcpkg_target}}-windows-static libass[asm]
     - name: Configure
       run: |
-        mkdir build
-        cmake -S. -Bbuild -DCMAKE_TOOLCHAIN_FILE=vcpkg-customed/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows-static-md -DCMAKE_BUILD_TYPE=Release
+        cmake -S. -Bbuild -A${{matrix.platform}} -DCMAKE_TOOLCHAIN_FILE=vcpkg-customed/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=${{matrix.vcpkg_target}}-windows-static -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
     - name: Build
-      run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=x64 subtext.sln
+      run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=${{matrix.platform}} subtext.sln
       working-directory: build
     - name: Upload
       uses: actions/upload-artifact@v2
       with:
-        name: subtext-cmake-vcpkg-windows
+        name: subtext-cmake-vcpkg-windows-${{matrix.vcpkg_target}}
         path: build/Release/subtext.dll
