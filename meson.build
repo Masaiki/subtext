@@ -1,4 +1,4 @@
-project('subtext', 'cpp',
+project('subtext', ['c', 'cpp'],
   default_options: ['buildtype=release', 'warning_level=2', 'b_lto=true', 'b_ndebug=if-release', 'cpp_std=c++14'],
   meson_version: '>=0.51.0',
   version: '2.1'
@@ -18,11 +18,11 @@ deps = [
 install_dir = vapoursynth_dep.get_variable(pkgconfig: 'libdir') / 'vapoursynth'
 
 sources = [
-  "src/common.c",
-  "src/image.cpp",
-  "src/text.c",
-  "src/toass.cpp",
-  "src/toutf8.c"
+  'src/common.c',
+  'src/image.cpp',
+  'src/text.c',
+  'src/toass.cpp',
+  'src/toutf8.c'
 ]
 
 if host_machine.cpu_family().startswith('x86')
