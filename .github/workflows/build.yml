@@ -11,37 +11,40 @@ jobs:
     strategy:
       matrix:
         include:
-        - vcpkg_target: 'x86'
-          platform: 'Win32'
-        - vcpkg_target: 'x64'
-          platform: 'x64'
+          - { sys: mingw32, env: i686 }
+          - { sys: mingw64, env: x86_64 }
     steps:
     - uses: actions/checkout@v2
-    - name: Setup msbuild
-      uses: microsoft/setup-msbuild@v1
-    - name: Setup vcpkg
+    - name: Setup MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{matrix.sys}}
+        update: true
+        install: >-
+          base-devel
+          git
+          mingw-w64-${{matrix.env}}-cmake
+          mingw-w64-${{matrix.env}}-meson
+          mingw-w64-${{matrix.env}}-toolchain
+          mingw-w64-${{matrix.env}}-zimg
+          mingw-w64-${{matrix.env}}-ffmpeg
+          mingw-w64-${{matrix.env}}-libiconv
+          mingw-w64-${{matrix.env}}-libass
+    - name: Install VapourSynth
       run: |
-        git config --global user.email "33897984+Masaiki@users.noreply.github.com"
-        git config --global user.name "github-action[bot]"
-        git clone https://github.com/microsoft/vcpkg.git vcpkg-customed
-        cd vcpkg-customed
-        git remote add libass-fix-pc https://github.com/Masaiki/vcpkg.git
-        git fetch libass-fix-pc
-        git cherry-pick 3f951f7 c2c719a 689c9ad 00b4a05
-        git revert --no-edit dd6fd59
-        bootstrap-vcpkg.bat
-    - name: Build ffmpeg iconv libass
-      run: |
-        vcpkg-customed\vcpkg install --triplet ${{matrix.vcpkg_target}}-windows-static ffmpeg[avcodec,avformat] libiconv fontconfig
-        vcpkg-customed\vcpkg install --triplet ${{matrix.vcpkg_target}}-windows-static libass[asm]
-    - name: Configure
-      run: |
-        cmake -S. -Bbuild -A${{matrix.platform}} -DCMAKE_TOOLCHAIN_FILE=vcpkg-customed/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=${{matrix.vcpkg_target}}-windows-static -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+        git clone https://github.com/vapoursynth/vapoursynth.git --depth 1
+        pushd vapoursynth
+        ./autogen.sh
+        ./configure --disable-vsscript --disable-vspipe --disable-python-module
+        make install -j2
+        popd
+        rm -rf vapoursynth
     - name: Build
-      run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=${{matrix.platform}} subtext.sln
-      working-directory: build
+      run: |
+        meson build -Dstatic=true
+        ninja -C build
     - name: Upload
       uses: actions/upload-artifact@v2
       with:
-        name: subtext-cmake-vcpkg-windows-${{matrix.vcpkg_target}}
-        path: build/Release/subtext.dll
+        name: subtext-meson-mingw-${{matrix.env}}
+        path: build/libsubtext.dll
