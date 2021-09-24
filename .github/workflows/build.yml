@@ -7,7 +7,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        shell: cmd
+        shell: msys2 {0}
     strategy:
       matrix:
         include:
@@ -25,7 +25,6 @@ jobs:
           git
           mingw-w64-${{matrix.env}}-cmake
           mingw-w64-${{matrix.env}}-meson
-          mingw-w64-${{matrix.env}}-ninja
           mingw-w64-${{matrix.env}}-toolchain
           mingw-w64-${{matrix.env}}-nasm
           mingw-w64-${{matrix.env}}-zimg
