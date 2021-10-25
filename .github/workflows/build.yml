@@ -22,7 +22,7 @@ jobs:
     - name: Setup vcpkg
       uses: lukka/run-vcpkg@v7
       with:
-        vcpkgGitCommitId: 8ad33ead9075cd8d6d357e0b870ba8d501efe35c
+        vcpkgGitCommitId: 2169ab765b49cfc5cd7eddfc8ff3e579326776f8
         vcpkgDirectory: ${{runner.workspace}}/vcpkg/
         vcpkgArguments: ffmpeg[avcodec,avformat] libiconv libass
         vcpkgTriplet: ${{matrix.vcpkg_target}}-windows-static
