@@ -26,8 +26,7 @@ jobs:
         bootstrap-vcpkg.bat
     - name: Build ffmpeg iconv libass
       run: |
-        vcpkg\vcpkg install --triplet ${{matrix.vcpkg_target}}-windows-static ffmpeg[avcodec,avformat] libiconv fontconfig
-        vcpkg\vcpkg install --triplet ${{matrix.vcpkg_target}}-windows-static libass[asm]
+        vcpkg\vcpkg install --triplet ${{matrix.vcpkg_target}}-windows-static ffmpeg[avcodec,avformat] libiconv libass
     - name: Configure
       run: |
         cmake -S. -Bbuild -A${{matrix.platform}} -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=${{matrix.vcpkg_target}}-windows-static -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
