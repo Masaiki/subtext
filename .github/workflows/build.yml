@@ -17,19 +17,20 @@ jobs:
           platform: 'x64'
     steps:
     - uses: actions/checkout@v2
+    - name: cache vcpkg packages
+      uses: pat-s/always-upload-cache@v2
+      with:
+        path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
+        key: vcpkg-archives-${{matrix.vcpkg_target}}-${{ github.run_id }}
+        restore-keys: vcpkg-archives-${{matrix.vcpkg_target}}-
     - name: Setup msbuild
       uses: microsoft/setup-msbuild@v1
-    - name: Setup vcpkg
-      run: |
-        git clone https://github.com/microsoft/vcpkg.git vcpkg
-        cd vcpkg
-        bootstrap-vcpkg.bat
     - name: Build ffmpeg iconv libass
       run: |
-        vcpkg\vcpkg install --triplet ${{matrix.vcpkg_target}}-windows-static ffmpeg[avcodec,avformat] libiconv libass
+        vcpkg.exe install --triplet ${{matrix.vcpkg_target}}-windows-static ffmpeg[avcodec,avformat] libiconv libass
     - name: Configure
       run: |
-        cmake -S. -Bbuild -A${{matrix.platform}} -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=${{matrix.vcpkg_target}}-windows-static -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
+        cmake -S. -Bbuild -A${{matrix.platform}} -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=${{matrix.vcpkg_target}}-windows-static -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded
     - name: Build
       run: MSBuild.exe /t:Rebuild /p:WindowsTargetPlatformVersion=10.0.18362.0 /p:PlatformToolset=v142 /m /p:Configuration=Release /p:Platform=${{matrix.platform}} subtext.sln
       working-directory: build
