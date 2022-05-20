@@ -4,7 +4,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     defaults:
       run:
         shell: cmd
@@ -17,12 +17,6 @@ jobs:
           platform: 'x64'
     steps:
     - uses: actions/checkout@v2
-    - name: cache vcpkg packages
-      uses: pat-s/always-upload-cache@v2
-      with:
-        path: C:\Users\runneradmin\AppData\Local\vcpkg\archives
-        key: vcpkg-archives-${{ github.run_id }}
-        restore-keys: vcpkg-archives-
     - name: Setup msbuild
       uses: microsoft/setup-msbuild@v1
     - name: Build ffmpeg iconv libass
